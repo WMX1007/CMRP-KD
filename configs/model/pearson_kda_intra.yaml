@@ -1,0 +1,37 @@
+_target_: src.models.kd_module.KDModule
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 0.0001
+  weight_decay: 0.0
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.StepLR
+  _partial_: true
+  step_size: 30
+  gamma: 0.5
+
+use_teacher: true
+
+net:
+  _target_: src.models.components.campus.TeacherStudent
+  teacher:
+    arch: convnext_xxlarge
+    pretrained: weights/open_clip_pytorch_model.bin
+  data_attributes: ${data.train_dataset.attributes}
+  student:
+    arch: resnet18
+  use_teacher: ${model.use_teacher}
+
+# 消融：仅 L_intra（按列/类别 Pearson）
+kd_criterion:
+  _target_: src.models.components.pearson_criterion.KDCriterion
+  img_criterion:
+    _target_: torch.nn.L1Loss
+  kd_weight: 0.03
+  temperature: 2.0
+  beta: 0.0
+  gamma: 1.0
+  class_num: ${data.train_dataset.attributes.class_num}
+
+compile: false

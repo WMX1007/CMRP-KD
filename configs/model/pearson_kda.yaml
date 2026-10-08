@@ -1,0 +1,51 @@
+_target_: src.models.kd_module.KDModule
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 0.0001
+  weight_decay: 0.0
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.StepLR
+  _partial_: true
+  step_size: 30
+  gamma: 0.5
+
+use_teacher: true
+
+net:
+  _target_: src.models.components.campus.TeacherStudent
+  #Must set use_teacher as True to use teacher
+  teacher:
+    arch: convnext_xxlarge
+    #pretrained: laion2b_s34b_b82k_augreg_soup
+    pretrained: weights/open_clip_pytorch_model.bin
+  data_attributes: ${data.train_dataset.attributes}
+
+  student:
+    arch: resnet18
+    #resnet34
+    #shufflenet_v2_x2_0
+    #mobilenet_v2
+    #swin_tiny_patch4_window7_224
+    #shufflenet_v2_x2_0
+    #efficientnet_b0
+
+  use_teacher: ${model.use_teacher}
+
+#Must set use_teacher as True to use teacher
+kd_criterion:
+  _target_: src.models.components.pearson_criterion.KDCriterion
+  img_criterion:
+    _target_: torch.nn.L1Loss #vl2lite做法
+  #nlp_criterion:
+  #  _target_: torch.nn.KLDivLoss
+  kd_weight: 0.03
+  temperature: 2.0
+  beta: 1.0
+  gamma: 1.0
+
+  class_num: ${data.train_dataset.attributes.class_num}
+
+# compile model for faster training with pytorch 2.0
+compile: false
