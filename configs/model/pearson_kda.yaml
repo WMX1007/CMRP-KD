@@ -27,8 +27,6 @@ net:
     #resnet34
     #shufflenet_v2_x2_0
     #mobilenet_v2
-    #swin_tiny_patch4_window7_224
-    #shufflenet_v2_x2_0
     #efficientnet_b0
 
   use_teacher: ${model.use_teacher}
@@ -37,7 +35,7 @@ net:
 kd_criterion:
   _target_: src.models.components.pearson_criterion.KDCriterion
   img_criterion:
-    _target_: torch.nn.L1Loss #vl2lite做法
+    _target_: torch.nn.L1Loss 
   #nlp_criterion:
   #  _target_: torch.nn.KLDivLoss
   kd_weight: 0.03
